@@ -1,0 +1,106 @@
+---
+
+- name: ensure netbox packages are installed
+  yum: name="{{ item }}" state="present"
+  with_items:
+    - gcc
+    - graphviz
+    - libxml2-devel
+    - libxslt-devel
+    - libffi-devel
+    - mod_ssl
+    - openldap-devel
+    - openssl-devel
+    - python-devel
+    - python-gunicorn
+    - python-pip
+    - python-virtualenv
+  tags: ['netbox']
+
+- name: ensure netbox user exists
+  user: name="{{ netbox_user }}"
+  tags: ['netbox']
+
+- name: ensure apache user is in netbox group
+  user: name=apache groups="{{ netbox_user }}" append=yes
+  tags: ['netbox']
+
+- name: ensure netbox dirs exist
+  file:
+    dest: /opt/netbox
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_user }}"
+    mode: 0710
+    state: directory
+  tags: ['netbox']
+
+- name: check if netbox is already installed
+  stat: path="/opt/netbox/netbox-{{ netbox_version }}"
+  register: netbox_found
+  tags: ['netbox']
+
+- name: download netbox source
+  get_url: url=https://github.com/digitalocean/netbox/archive/v{{ netbox_version }}.tar.gz dest=/usr/src/netbox-{{ netbox_version }}.tar.gz
+  when: netbox_found.stat.exists == false
+  tags: ['netbox']
+
+- name: untar netbox
+  shell: "tar zx -C /opt/netbox -f /usr/src/netbox-{{ netbox_version }}.tar.gz"
+  when: netbox_found.stat.exists == false
+  become_user: "{{ netbox_user }}"
+  tags: ['netbox']
+
+- name: place netbox symlink
+  file:
+    src: "/opt/netbox/netbox-{{ netbox_version }}"
+    dest: /opt/netbox/current
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_user }}"
+    state: link
+  tags: ['netbox']
+
+- name: place netbox config
+  template:
+    src: "opt.netbox.current.netbox.netbox.{{ item }}.py.j2"
+    dest: "/opt/netbox/current/netbox/netbox/{{ item }}.py"
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_user }}"
+    mode: 0600
+  with_items:
+    - configuration
+  tags: ['netbox']
+
+- name: place gunicorn netbox config
+  template:
+    src: opt.netbox.current.gunicorn_config.py.j2
+    dest: /opt/netbox/current/gunicorn_config.py
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_user }}"
+    mode: 0600
+  tags: ['netbox']
+
+- name: install netbox python modules
+  pip:
+    requirements: /opt/netbox/current/requirements.txt
+  tags: ['netbox']
+
+# - name: ensure netbox cert is in place
+#   copy: content="{{ netbox_cert }}" dest="/etc/pki/tls/certs/netbox.crt" mode=0640 owner=root group=root
+#   notify: reload netbox httpd
+#   when: netbox_use_ssl
+#   tags: ['netbox']
+
+# - name: ensure netbox ca bundle is in place
+#   copy: content="{{ netbox_cabundle }}" dest="/etc/pki/tls/certs/netbox-cabundle.crt" mode=0640 owner=root group=root
+#   notify: reload netbox httpd
+#   when: netbox_use_ssl
+#   tags: ['netbox']
+
+# - name: ensure netbox key is in place
+#   copy: content="{{ netbox_key }}" dest="/etc/pki/tls/private/netbox.key" mode=0640 owner=root group=root
+#   notify: reload netbox httpd
+#   when: netbox_use_ssl
+#   tags: ['netbox']
+
+- include: ldap.yml
+  when: netbox_use_ldap

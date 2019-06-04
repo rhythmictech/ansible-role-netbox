@@ -1,0 +1,14 @@
+---
+
+netbox_version: 2.5.13
+
+netbox_use_ldap: false
+
+netbox_url:
+
+netbox_db_database:
+netbox_db_username:
+netbox_db_password:
+netbox_db_hostname:
+
+netbox_user: netbox

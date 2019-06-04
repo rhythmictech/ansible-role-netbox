@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+command = '/usr/bin/gunicorn'
+pythonpath = '/opt/netbox/current/netbox'
+bind = '127.0.0.1:8001'
+workers = 3
+user = 'netbox'
