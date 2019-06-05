@@ -1,15 +1,17 @@
-- name: place netbox config
-    template:
-      src: "opt.netbox.current.netbox.netbox.{{ item }}.py.j2"
-      dest: "/opt/netbox/current/netbox/netbox/{{ item }}.py"
-      owner: "{{ netbox_user }}"
-      group: "{{ netbox_user }}"
-      mode: 0600
-    with_items:
-      - ldap_config
-    tags: ['netbox']
+---
 
-  - name: install manual netbox python modules
-    pip: name=django-auth-ldap
-    tags: ['netbox']
-    
+- name: place netbox config
+  template:
+    src: "opt.netbox.current.netbox.netbox.{{ item }}.py.j2"
+    dest: "/opt/netbox/current/netbox/netbox/{{ item }}.py"
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_user }}"
+    mode: 0600
+  with_items:
+    - ldap_config
+  tags: ['netbox']
+
+- name: install manual netbox python modules
+  pip: name=django-auth-ldap
+  tags: ['netbox']
+  
