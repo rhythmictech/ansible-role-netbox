@@ -1,0 +1,14 @@
+---
+
+galaxy_info:
+  author: Rhythmic Operations <opsteam@rhythmictech.com>
+  description: Ansible Role for Netbox
+  company: Rhythmic Technologies, Inc.
+  license: MIT
+  min_ansible_version: 2.0
+  platforms:
+    - name: CentOS
+      versions:
+        - "6"
+        - "7"
+dependencies: []

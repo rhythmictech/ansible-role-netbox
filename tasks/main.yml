@@ -103,4 +103,4 @@
 #   tags: ['netbox']
 
 - include: ldap.yml
-  when: netbox_use_ldap
+  when: netbox_ldap_config.enabled

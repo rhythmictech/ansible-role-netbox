@@ -1,0 +1,60 @@
+import ldap
+
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
+# Server URI
+AUTH_LDAP_SERVER_URI = "{{ netbox_ldap_config.server }}"
+
+# The following may be needed if you are binding to Active Directory.
+AUTH_LDAP_CONNECTION_OPTIONS = {
+    ldap.OPT_REFERRALS: 1
+}
+
+# Set the DN and password for the NetBox service account.
+AUTH_LDAP_BIND_DN = "{{ netbox_ldap_config.bind_dn }}"
+AUTH_LDAP_BIND_PASSWORD = "{{ netbox_ldap_config.bind_pw }}"
+
+# Include this setting if you want to ignore certificate errors. This might be needed to accept a self-signed cert.
+# Note that this is a NetBox-specific setting which sets:
+#     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+LDAP_IGNORE_CERT_ERRORS = True
+
+
+# This search matches users with the sAMAccountName equal to the provided username. This is required if the user's
+# username is not in their DN (Active Directory).
+AUTH_LDAP_USER_SEARCH = LDAPSearch("{{ netbox_ldap_base_dn }}",
+                                    ldap.SCOPE_SUBTREE,
+                                    "(sAMAccountName=%(user)s)")
+
+# If a user's DN is producible from their username, we don't need to search.
+#AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=users,dc=example,dc=com"
+
+# You can map user attributes to Django attributes as so.
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn"
+}
+
+
+# This search ought to return all groups to which the user belongs. django_auth_ldap uses this to determine group
+# heirarchy.
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("{{ netbox_ldap_config.base_dn }}", ldap.SCOPE_SUBTREE,
+                                    "(objectClass=group)")
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
+
+# Define a group required to login.
+AUTH_LDAP_REQUIRE_GROUP = "{{ netbox_ldap_config.active_group }},{{ netbox_ldap_config.base_dn }}"
+
+# Define special user types using groups. Exercise great caution when assigning superuser status.
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    "is_active": "{{ netbox_ldap_config.active_group }},{{ netbox_ldap_config.base_dn }}",
+    "is_staff": "{{ netbox_ldap_config.staff_group }},{{ netbox_ldap_base_dn }}",
+    "is_superuser": "{{ netbox_ldap_config.admin_group }},{{ netbox_ldap_base_dn }}"
+}
+
+# For more granular permissions, we can map LDAP groups to Django groups.
+AUTH_LDAP_FIND_GROUP_PERMS = False
+
+# Cache groups for one hour to reduce LDAP traffic
+AUTH_LDAP_CACHE_GROUPS = True
+AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
