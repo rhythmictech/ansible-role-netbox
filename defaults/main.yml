@@ -12,3 +12,20 @@ netbox_database:
 
 netbox_ldap_config:
   enabled: false
+
+netbox_user: netbox
+
+netbox_packages:
+  - gcc
+  - graphviz
+  - libxml2-devel
+  - libxslt-devel
+  - libffi-devel
+  - mod_ssl
+  - nginx
+  - openldap-devel
+  - openssl-devel
+  - python36
+  - python36-devel
+  - python36-pip
+  - python36-virtualenv

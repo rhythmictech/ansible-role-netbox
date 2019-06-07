@@ -8,10 +8,10 @@ ALLOWED_HOSTS = ['{{ netbox_url }}']
 
 # PostgreSQL database configuration.
 DATABASE = {
-    'NAME':             '{{ netbox_db_database }}',      # Database name
-    'USER':             '{{ netbox_db_username }}',      # PostgreSQL username
-    'PASSWORD':         '{{ netbox_db_password }}',      # PostgreSQL password
-    'HOST':             '{{ netbox_db_hostname }}',      # Database server
+    'NAME':             '{{ netbox_database.db }}',      # Database name
+    'USER':             '{{ netbox_database.username }}',      # PostgreSQL username
+    'PASSWORD':         '{{ netbox_database.password }}',      # PostgreSQL password
+    'HOST':             '{{ netbox_database.hostname }}',      # Database server
     'PORT':             '',                              # Database port (leave blank for default)
 }
 

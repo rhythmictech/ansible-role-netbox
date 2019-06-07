@@ -1,20 +1,14 @@
 ---
 
+# TODO abstract python3 work to separate module
+# - name: install IUS repo
+#   yum:
+#     name: "https://centos{{ ansible_distribution_major_version }}.iuscommunity.org/ius-release.rpm"
+#     state: present
+#   tags: ['netbox']
+
 - name: ensure netbox packages are installed
-  yum: name="{{ item }}" state="present"
-  with_items:
-    - gcc
-    - graphviz
-    - libxml2-devel
-    - libxslt-devel
-    - libffi-devel
-    - mod_ssl
-    - openldap-devel
-    - openssl-devel
-    - python-devel
-    - python-gunicorn
-    - python-pip
-    - python-virtualenv
+  yum: name="{{ netbox_packages }}" state="present"
   tags: ['netbox']
 
 - name: ensure netbox user exists
@@ -80,8 +74,19 @@
   tags: ['netbox']
 
 - name: install netbox python modules
+  become_user: "{{ netbox_user }}"
   pip:
     requirements: /opt/netbox/current/requirements.txt
+    virtualenv: /opt/netbox/venv
+    virtualenv_command: /bin/virtualenv-3
+  tags: ['netbox']
+
+- name: install gunicorn inside venv
+  become_user: "{{ netbox_user }}"
+  pip:
+    name: gunicorn
+    virtualenv: /opt/netbox/venv
+    virtualenv_command: /bin/virtualenv-3
   tags: ['netbox']
 
 # - name: ensure netbox cert is in place
@@ -104,3 +109,12 @@
 
 - include: ldap.yml
   when: netbox_ldap_config.enabled
+
+- name: place nginx config
+  template:
+    src: etc.nginx.nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: "root"
+    group: "root"
+    mode: 0400
+  tags: ['netbox']
