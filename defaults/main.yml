@@ -36,3 +36,7 @@ netbox_ubuntu_packages:
   - python3-pip
   - python3-virtualenv
   - nginx
+
+
+netbox_virtualenv_command: "/usr/bin/python3.6 -m venv"
+
