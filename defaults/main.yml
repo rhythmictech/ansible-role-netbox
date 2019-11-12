@@ -15,13 +15,12 @@ netbox_ldap_config:
 
 netbox_user: netbox
 
-netbox_packages:
+netbox_centos_packages:
   - gcc
   - graphviz
   - libxml2-devel
   - libxslt-devel
   - libffi-devel
-  - mod_ssl
   - nginx
   - openldap-devel
   - openssl-devel
@@ -29,3 +28,11 @@ netbox_packages:
   - python36-devel
   - python36-pip
   - python36-virtualenv
+
+netbox_ubuntu_packages:
+  - python3-graphviz
+  - openssl1.0
+  - python3-dev
+  - python3-pip
+  - python3-virtualenv
+  - nginx

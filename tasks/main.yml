@@ -7,8 +7,14 @@
 #     state: present
 #   tags: ['netbox']
 
-- name: ensure netbox packages are installed
-  yum: name="{{ netbox_packages }}" state="present"
+- name: ensure netbox packages are installed (centos)
+  yum: name="{{ netbox_centos_packages }}" state="present"
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  tags: ['netbox']
+
+- name: ensure netbox packages are installed (ubuntu)
+  apt: name="{{ netbox_ubuntu_packages }}" state="present"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   tags: ['netbox']
 
 - name: ensure netbox user exists
