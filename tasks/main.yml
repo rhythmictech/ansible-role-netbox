@@ -1,12 +1,5 @@
 ---
 
-# TODO abstract python3 work to separate module
-# - name: install IUS repo
-#   yum:
-#     name: "https://centos{{ ansible_distribution_major_version }}.iuscommunity.org/ius-release.rpm"
-#     state: present
-#   tags: ['netbox']
-
 - name: ensure netbox packages are installed (centos)
   yum: name="{{ netbox_centos_packages }}" state="present"
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
@@ -84,7 +77,6 @@
   pip:
     requirements: /opt/netbox/current/requirements.txt
     virtualenv: /opt/netbox/venv
-    virtualenv_command: /bin/virtualenv-3
   tags: ['netbox']
 
 - name: install gunicorn inside venv
@@ -92,7 +84,6 @@
   pip:
     name: gunicorn
     virtualenv: /opt/netbox/venv
-    virtualenv_command: /bin/virtualenv-3
   tags: ['netbox']
 
 # - name: ensure netbox cert is in place
