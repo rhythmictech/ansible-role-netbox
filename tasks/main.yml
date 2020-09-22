@@ -103,6 +103,7 @@
     mode: 0400
   tags: ['netbox']
 
+# changed_when: False to stop idempotence checks from breaking
 - name: run netbox DB migrations
   become_user: "{{ netbox_user }}"
   command: "{{ item }}"
@@ -111,6 +112,7 @@
     - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py remove_stale_contenttypes --no-input"
     - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py clearsessions"
   when: netbox_run_db_migrations
+  changed_when: False
   tags: ['netbox']
 
 - name: run netbox non-DB migrations
@@ -120,6 +122,7 @@
     - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py collectstatic --no-input"
     - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py invalidate all"
   when: netbox_run_other_migrations
+  changed_when: False
   tags: ['netbox']
 
 - include: service.yml
