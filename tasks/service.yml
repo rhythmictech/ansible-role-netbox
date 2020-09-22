@@ -1,0 +1,64 @@
+---
+
+- name: netbox | ensure netbox systemd service file exists
+  template:
+    src: etc.systemd.system.netbox.service.j2
+    dest: /etc/systemd/system/netbox.service
+    owner: root
+    group: root
+    mode: 0755
+  register: netbox_unit_file
+  tags: ['netbox']
+
+- name: netbox | ensure netbox-rq systemd service file exists
+  template:
+    src: etc.systemd.system.netbox-rq.service.j2
+    dest: /etc/systemd/system/netbox-rq.service
+    owner: root
+    group: root
+    mode: 0755
+  register: netboxrq_unit_file
+  tags: ['netbox']
+
+- name: netbox | reload systemd
+  shell: '/bin/systemctl daemon-reload'
+  when:
+    - netbox_unit_file.changed | default(False)
+    - netboxrq_unit_file.changed | default(False)
+  tags: ['netbox']
+
+- name: netbox | set redis service to desired enabled/disabled state
+  service: name=redis enabled={{ netbox_enable_service }}
+  tags: ['netbox']
+
+- name: netbox | start redis if desired
+  service: name=redis state=started
+  when: netbox_start_service
+  tags: ['netbox']
+
+- name: netbox | set netbox service to desired enabled/disabled state
+  service: name=netbox enabled={{ netbox_enable_service }}
+  tags: ['netbox']
+
+- name: netbox | start netbox if desired
+  service: name=netbox state=started
+  when: netbox_start_service
+  tags: ['netbox']
+
+- name: netbox | set netbox-rq service to desired enabled/disabled state
+  service: name=netbox-rq enabled={{ netbox_enable_service }}
+  tags: ['netbox']
+
+- name: netbox | start netbox-rq if desired
+  service: name=netbox-rq state=started
+  when: netbox_start_service
+  tags: ['netbox']
+
+- name: netbox | set nginx service to desired enabled/disabled state
+  service: name=nginx enabled={{ netbox_enable_service }}
+  tags: ['netbox']
+
+- name: netbox | start nginx if desired
+  service: name=nginx state=started
+  when: netbox_start_service
+  tags: ['netbox']

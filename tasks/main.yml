@@ -1,12 +1,19 @@
 ---
 
-- name: ensure netbox packages are installed (centos)
-  yum: name="{{ netbox_centos_packages }}" state="present"
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-  tags: ['netbox']
+- include: amzn2.yml
+  when: ansible_distribution == 'Amazon'
 
-- name: ensure netbox packages are installed (ubuntu)
-  apt: name="{{ netbox_ubuntu_packages }}" state="present"
+- include: centos7.yml
+  when:
+    - ansible_distribution_major_version == "7"
+    - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- include: centos8.yml
+  when:
+    - ansible_distribution_major_version == "8"
+    - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- include: ubuntu.yml
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   tags: ['netbox']
 
@@ -14,13 +21,9 @@
   user: name="{{ netbox_user }}"
   tags: ['netbox']
 
-- name: ensure apache user is in netbox group
-  user: name=apache groups="{{ netbox_user }}" append=yes
-  tags: ['netbox']
-
 - name: ensure netbox dirs exist
   file:
-    dest: /opt/netbox
+    dest: "{{ netbox_base_dir }}"
     owner: "{{ netbox_user }}"
     group: "{{ netbox_user }}"
     mode: 0710
@@ -28,7 +31,7 @@
   tags: ['netbox']
 
 - name: check if netbox is already installed
-  stat: path="/opt/netbox/netbox-{{ netbox_version }}"
+  stat: path="{{ netbox_base_dir }}/netbox-{{ netbox_version }}"
   register: netbox_found
   tags: ['netbox']
 
@@ -38,15 +41,15 @@
   tags: ['netbox']
 
 - name: untar netbox
-  shell: "tar zx -C /opt/netbox -f /usr/src/netbox-{{ netbox_version }}.tar.gz"
-  when: netbox_found.stat.exists == false
   become_user: "{{ netbox_user }}"
+  shell: "tar zx -C {{ netbox_base_dir }} -f /usr/src/netbox-{{ netbox_version }}.tar.gz"
+  when: netbox_found.stat.exists == false
   tags: ['netbox']
 
 - name: place netbox symlink
   file:
-    src: "/opt/netbox/netbox-{{ netbox_version }}"
-    dest: /opt/netbox/current
+    src: "{{ netbox_base_dir }}/netbox-{{ netbox_version }}"
+    dest: "{{ netbox_base_dir }}/current"
     owner: "{{ netbox_user }}"
     group: "{{ netbox_user }}"
     state: link
@@ -55,7 +58,7 @@
 - name: place netbox config
   template:
     src: "opt.netbox.current.netbox.netbox.{{ item }}.py.j2"
-    dest: "/opt/netbox/current/netbox/netbox/{{ item }}.py"
+    dest: "{{ netbox_base_dir }}/current/netbox/netbox/{{ item }}.py"
     owner: "{{ netbox_user }}"
     group: "{{ netbox_user }}"
     mode: 0600
@@ -66,7 +69,7 @@
 - name: place gunicorn netbox config
   template:
     src: opt.netbox.current.gunicorn_config.py.j2
-    dest: /opt/netbox/current/gunicorn_config.py
+    dest: "{{ netbox_base_dir }}/current/gunicorn_config.py"
     owner: "{{ netbox_user }}"
     group: "{{ netbox_user }}"
     mode: 0600
@@ -75,8 +78,8 @@
 - name: install netbox python modules
   become_user: "{{ netbox_user }}"
   pip:
-    requirements: /opt/netbox/current/requirements.txt
-    virtualenv: /opt/netbox/venv
+    requirements: "{{ netbox_base_dir }}/current/requirements.txt"
+    virtualenv: "{{ netbox_base_dir }}/venv"
     virtualenv_command: "{{ netbox_virtualenv_command }}"
   tags: ['netbox']
 
@@ -84,27 +87,9 @@
   become_user: "{{ netbox_user }}"
   pip:
     name: gunicorn
-    virtualenv: /opt/netbox/venv
+    virtualenv: "{{ netbox_base_dir }}/venv"
     virtualenv_command: "{{ netbox_virtualenv_command }}"
   tags: ['netbox']
-
-# - name: ensure netbox cert is in place
-#   copy: content="{{ netbox_cert }}" dest="/etc/pki/tls/certs/netbox.crt" mode=0640 owner=root group=root
-#   notify: reload netbox httpd
-#   when: netbox_use_ssl
-#   tags: ['netbox']
-
-# - name: ensure netbox ca bundle is in place
-#   copy: content="{{ netbox_cabundle }}" dest="/etc/pki/tls/certs/netbox-cabundle.crt" mode=0640 owner=root group=root
-#   notify: reload netbox httpd
-#   when: netbox_use_ssl
-#   tags: ['netbox']
-
-# - name: ensure netbox key is in place
-#   copy: content="{{ netbox_key }}" dest="/etc/pki/tls/private/netbox.key" mode=0640 owner=root group=root
-#   notify: reload netbox httpd
-#   when: netbox_use_ssl
-#   tags: ['netbox']
 
 - include: ldap.yml
   when: netbox_ldap_config.enabled
@@ -117,3 +102,24 @@
     group: "root"
     mode: 0400
   tags: ['netbox']
+
+- name: run netbox DB migrations
+  become_user: "{{ netbox_user }}"
+  command: "{{ item }}"
+  with_items:
+    - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py migrate"
+    - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py remove_stale_contenttypes --no-input"
+    - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py clearsessions"
+  when: netbox_run_db_migrations
+  tags: ['netbox']
+
+- name: run netbox non-DB migrations
+  become_user: "{{ netbox_user }}"
+  command: "{{ item }}"
+  with_items:
+    - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py collectstatic --no-input"
+    - "{{ netbox_base_dir }}/venv/bin/python3 {{ netbox_base_dir }}/current/netbox/manage.py invalidate all"
+  when: netbox_run_other_migrations
+  tags: ['netbox']
+
+- include: service.yml

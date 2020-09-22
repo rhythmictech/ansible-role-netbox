@@ -1,7 +1,9 @@
 # {{ ansible_managed }}
 
 command = '/usr/bin/gunicorn'
-pythonpath = '/opt/netbox/current/netbox'
+pythonpath = '{{ netbox_base_dir }}/current/netbox'
 bind = '127.0.0.1:8001'
-workers = 3
-user = 'netbox'
+workers = 5
+threads = 3
+timeout = 120
+user = '{{ netbox_user }}'

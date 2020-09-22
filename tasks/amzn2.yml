@@ -1,0 +1,21 @@
+---
+
+- name: install nginx (amazon)
+  command: amazon-linux-extras install nginx1 -y
+  changed_when: False # this is always true
+  tags: ['netbox']
+
+- name: install redis (amazon)
+  command: amazon-linux-extras install redis4.0 -y
+  changed_when: False # this is always true
+  tags: ['netbox']
+
+- name: ensure netbox packages are installed (amazon)
+  yum: name="{{ netbox_amzn_packages }}" state="present"
+  tags: ['netbox']
+
+- name: ensure netbox packages are installed (amazon)
+  set_fact:
+    netbox_virtualenv_command: "/usr/bin/python3.7 -m venv"
+  when: ansible_distribution == 'Amazon'
+  tags: ['netbox']
