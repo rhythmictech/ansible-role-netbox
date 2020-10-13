@@ -1,0 +1,31 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    netbox_secret_key: test
+    netbox_enable_service: True
+    netbox_start_service: True
+    netbox_run_db_migrations: True
+    netbox_run_other_migrations: True
+    netbox_database:
+      hostname: localhost
+      username: netbox
+      password: netbox
+      db: netbox
+    postgresql_databases:
+      - name: netbox
+        owner: netbox
+    postgresql_users:
+      - name: netbox
+        password: netbox
+
+  tasks:
+    # packages for the docker image so that it can successfully install postgres
+    - command: yum -y install glibc-locale-source glibc-langpack-en
+      when:
+        - ansible_distribution_major_version == "8"
+        - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    - include_role:
+        name: "geerlingguy.postgresql"
+    - include_role:
+        name: "ansible-role-netbox"

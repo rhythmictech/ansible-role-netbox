@@ -1,0 +1,14 @@
+---
+
+- name: ensure epel is installed (centos8)
+  yum: name="epel-release" state="present"
+  tags: ['netbox']
+
+- name: ensure netbox packages are installed (centos8)
+  yum: name="{{ netbox_centos8_packages }}" state="present"
+  tags: ['netbox']
+
+- name: set venv command (centos8)
+  set_fact:
+    netbox_virtualenv_command: "/usr/bin/python3.8 -m venv"
+  tags: ['netbox']

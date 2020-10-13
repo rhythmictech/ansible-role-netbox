@@ -1,0 +1,31 @@
+---
+# This check only runs on centos8 because the postgres role doesn't work
+# on amazon linux 2 or centos7
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+platforms:
+  - name: centos8
+    command: /sbin/init
+    image: docker.io/geerlingguy/docker-centos8-ansible
+    pre_build_image: true
+    privileged: true
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+provisioner:
+  name: ansible
+  playbooks:
+    converge: ../resources/playbooks/converge-db.yml
+    verify: ../resources/playbooks/verify.yml
+scenario:
+  name: fulltest
+verifier:
+  name: ansible
+  directory: ../resources/tests

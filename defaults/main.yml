@@ -1,21 +1,58 @@
 ---
 
-netbox_version: 2.5.13
+########################################
+# Netbox general settings
+########################################
+netbox_version: 2.9.3
 
+# should be fully qualified
 netbox_url:
 
+# must be valid for netbox to function properly
 netbox_database:
   hostname:
   username:
   password:
   db:
 
+########################################
+# First Run State
+########################################
+
+# these will control netbox, nginx, redis and netbox-rq
+netbox_enable_service: False
+netbox_start_service: False
+
+netbox_run_db_migrations: False
+netbox_run_other_migrations: False
+
+########################################
+# LDAP config
+########################################
 netbox_ldap_config:
   enabled: false
 
-netbox_user: netbox
+########################################
+# Netbox packages/locations
+########################################
 
-netbox_centos_packages:
+# these probably don't need to change.. but you can if you want
+
+netbox_user: netbox
+netbox_base_dir: /opt/netbox
+
+netbox_amzn_packages:
+  - gcc
+  - graphviz
+  - libxml2-devel
+  - libxslt-devel
+  - libffi-devel
+  - openldap-devel
+  - openssl-devel
+  - python3-devel
+  - tar
+
+netbox_centos7_packages:
   - gcc
   - graphviz
   - libxml2-devel
@@ -28,6 +65,21 @@ netbox_centos_packages:
   - python36-devel
   - python36-pip
   - python36-virtualenv
+  - redis
+
+netbox_centos8_packages:
+  - gcc
+  - graphviz
+  - libxml2-devel
+  - libxslt-devel
+  - libffi-devel
+  - nginx
+  - openldap-devel
+  - openssl-devel
+  - python38
+  - python38-devel
+  - python38-pip
+  - redis
 
 netbox_ubuntu_packages:
   - python3-graphviz
@@ -36,7 +88,4 @@ netbox_ubuntu_packages:
   - python3-pip
   - python3-virtualenv
   - nginx
-
-
-netbox_virtualenv_command: "/usr/bin/python3.6 -m venv"
-
+  - redis-server

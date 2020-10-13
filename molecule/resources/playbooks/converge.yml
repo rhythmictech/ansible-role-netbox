@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    netbox_secret_key: test
+    netbox_enable_service: True
+    netbox_start_service: True
+
+  tasks:
+    - include_role:
+        name: "ansible-role-netbox"
