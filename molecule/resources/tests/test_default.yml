@@ -1,0 +1,48 @@
+# Molecule managed
+
+---
+
+file:
+  /opt/netbox/current/gunicorn_config.py:
+    exists: true
+    owner: netbox
+    group: netbox
+    mode: "0600"
+    filetype: file
+  /opt/netbox/current/netbox/netbox/configuration.py:
+    exists: true
+    owner: netbox
+    group: netbox
+    mode: "0600"
+    filetype: file
+  /opt/netbox/current:
+    exists: true
+    filetype: symlink
+
+port:
+  tcp:80:
+    listening: true
+    ip:
+      - 0.0.0.0
+  tcp:8001:
+    listening: true
+    ip:
+      - 127.0.0.1
+  tcp:6379:
+    listening: true
+    ip:
+      - 127.0.0.1
+
+service:
+  nginx:
+    enabled: true
+    running: true
+  redis:
+    enabled: true
+    running: true
+  netbox:
+    enabled: true
+    running: true
+  netbox-rq:
+    enabled: true
+    running: true

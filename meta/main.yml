@@ -1,11 +1,11 @@
 ---
 
 galaxy_info:
-  author: Rhythmic Operations <opsteam@rhythmictech.com>
-  description: Ansible Role for Netbox
+  author: Rhythmic OSS <opensource@rhythmictech.com>
+  description: Ansible Role for Netbox (https://github.com/netbox-community/netbox)
   company: Rhythmic Technologies, Inc.
   license: MIT
-  min_ansible_version: 2.0
+  min_ansible_version: 2.8.0
   platforms:
     - name: Amazon Linux 2
       versions:

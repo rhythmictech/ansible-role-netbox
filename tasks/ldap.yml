@@ -14,4 +14,3 @@
 - name: install manual netbox python modules
   pip: name=django-auth-ldap
   tags: ['netbox']
-  
