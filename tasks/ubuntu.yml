@@ -1,0 +1,11 @@
+---
+
+- name: ensure netbox packages are installed (ubuntu)
+  apt: name="{{ netbox_ubuntu_packages }}" state="present"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: ['netbox']
+
+- name: set venv command (ubuntu)
+  set_fact:
+    netbox_virtualenv_command: "/usr/bin/python3.6 -m venv"
+  tags: ['netbox']
