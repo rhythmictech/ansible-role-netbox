@@ -7,9 +7,13 @@ galaxy_info:
   license: MIT
   min_ansible_version: 2.0
   platforms:
+    - name: Amazon Linux 2
+      versions:
+        - "any"
     - name: CentOS
       versions:
         - "7"
+        - "8"
     - name: Ubuntu
       versions:
         - "18"
