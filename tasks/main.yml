@@ -26,7 +26,7 @@
     dest: "{{ netbox_base_dir }}"
     owner: "{{ netbox_user }}"
     group: "{{ netbox_user }}"
-    mode: 0710
+    mode: 0711
     state: directory
   tags: ['netbox']
 
