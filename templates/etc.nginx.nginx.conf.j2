@@ -2,7 +2,11 @@ events {}
 
 http {
 
+    include    mime.types;
+    
     sendfile on;
+
+    client_max_body_size 25m;
 
     gzip              on;
     gzip_http_version 1.0;
@@ -28,7 +32,7 @@ http {
             proxy_set_header   Host $host;
             proxy_set_header   X-Real-IP $remote_addr;
             proxy_set_header   X-Forwarded-Host $server_name;
-
+            proxy_set_header   X-Forwarded-Proto https;
         }
     }
 }
